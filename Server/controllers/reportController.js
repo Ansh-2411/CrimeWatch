@@ -28,6 +28,8 @@ const handlenewreport = async (req, res) => {
   try {
     const { crimetype, crimeDate, crimeTime, description, crimeimageURL } = req.body;
     const location = req.body.location || {};
+    const name = req.body.fullName || "";
+    const email = req.body.email || "";
     console.log(location)
 
     // Handle different location formats
@@ -56,6 +58,8 @@ const handlenewreport = async (req, res) => {
 
     // Create the incident object
     const newIncident = {
+      fullName: name,
+      email: email,
       reportId: uuidv4(), // Ensure unique reportId
       crimetype,
       location: {

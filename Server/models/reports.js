@@ -1,10 +1,34 @@
 const { Schema, model } = require("mongoose");
 const { v4: uuidv4 } = require('uuid');
 
-
+const timelineSchema = new Schema({
+  date: { type: Date, default: Date.now },
+  status: {
+    type: String,
+    enum: [
+      "submitted",
+      "received",
+      "under_review",
+      "approved",
+      "investigating",
+      "resolved",
+      "closed",
+      "rejected"
+    ],
+    required: true,
+    default: "submitted"
+  },
+  note: { type: String, default: "" }
+});
 const reportSchema = new Schema({
-  reportId: { type: String, unique: true, required: true, default: uuidv4 }, 
 
+  fullName: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  reportId: { type: String, unique: true, required: true, default: uuidv4 },
   crimetype: {
     type: String,
     required: true,
@@ -33,14 +57,32 @@ const reportSchema = new Schema({
     type: String,
     required: true
   },
-  crimeimageURL: {
-    type: String,
-    default: ''
+  crimeimageURLs: {
+    type: [String],
+    default: []
   },
+
   reportedAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  status: {
+    type: String,
+    enum: [
+      "submitted",
+      "received",
+      "under_review",
+      "approved",
+      "investigating",
+      "resolved",
+      "closed",
+      "rejected"
+    ],
+    default: "submitted",
+  },
+  lastUpdated: { type: Date, default: Date.now },
+  timeline: [timelineSchema],
+  assignedTo: { type: String, default: "Not Assigned" }
 });
 
 // Create a geospatial index on the location field

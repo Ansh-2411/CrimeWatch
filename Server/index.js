@@ -47,7 +47,7 @@ const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max size
+    fileSize: 10 * 1024 * 1024,
   }
 });
 
@@ -102,6 +102,53 @@ app.post('/api/upload-audio', upload.single('audio'), (req, res) => {
     });
   }
 });
+
+
+// Route for image upload
+app.post('/api/upload-image', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file uploaded' });
+    }
+
+    // Upload to Cloudinary
+    cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'image',
+        folder: 'incident_images',
+        public_id: `image_${Date.now()}`
+      },
+      (error, result) => {
+        if (error) {
+          console.error('Cloudinary error:', error);
+          return res.status(500).json({
+            message: 'Error uploading image to Cloudinary',
+            error
+          });
+        }
+
+        return res.status(200).json({
+          message: 'Image uploaded successfully',
+          imageData: {
+            url: result.secure_url,
+            format: result.format,
+            width: result.width,
+            height: result.height,
+            resource_type: result.resource_type
+          }
+        });
+      }
+    ).end(req.file.buffer);
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    return res.status(500).json({
+      message: 'Error processing image upload',
+      error: error.message
+    });
+  }
+});
+
 
 
 // Health check endpoint
