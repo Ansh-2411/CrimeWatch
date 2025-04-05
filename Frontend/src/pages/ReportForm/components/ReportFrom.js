@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import CurrentLocationMap from '../../../components/Map/Map'
+import CurrentLocationMap from '../../../components/Map/Map';
+
 const Button = ({ size, className, children, fun = () => { } }) => {
   const sizeClasses = {
     lg: 'py-3 px-6 text-lg'
@@ -13,9 +14,9 @@ const Button = ({ size, className, children, fun = () => { } }) => {
     </button>
   );
 };
-const ReportForm = () => {
 
-  const [reportUrl, setReportUrl] = useState('')
+const ReportForm = () => {
+  const [reportUrl, setReportUrl] = useState('');
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -27,16 +28,22 @@ const ReportForm = () => {
       coordinates: [], // [longitude, latitude]
       address: ""
     },
-    crimeimageURL: ""
+    crimeimageURLs: []
   });
+
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  useEffect(() => {
+    console.log(reportUrl)
+  }, [reportUrl])
+
 
   const handleLocationUpdate = (coordinates, address) => {
     setFormData({
@@ -49,39 +56,47 @@ const ReportForm = () => {
   };
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setSelectedFiles(filesArray);
+
+      // Create preview URLs
+      const newPreviewUrls = filesArray.map(file => URL.createObjectURL(file));
+      setPreviewUrls(newPreviewUrls);
     }
   };
+
+  // Cleanup preview URLs when component unmounts
   useEffect(() => {
-    console.log(reportUrl)
-  }, [reportUrl])
+    return () => {
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
 
-
-  // Add this function to your React component
-  // Add this function to your React component
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
-    let uploadedImageURL = "";
+    let uploadedImageURLs = [];
 
     try {
-      // Step 1: Upload image if selected
-      if (selectedFile) {
+      // Step 1: Upload images if selected
+      if (selectedFiles.length > 0) {
         const imageFormData = new FormData();
-        imageFormData.append('image', selectedFile);
+        selectedFiles.forEach(file => {
+          imageFormData.append('images', file);
+        });
 
-        const imageUploadResponse = await fetch('http://localhost:4000/api/upload-image', {
+        const imageUploadResponse = await fetch('http://localhost:4000/api/upload-images', {
           method: 'POST',
           body: imageFormData
         });
 
         const imageResult = await imageUploadResponse.json();
         if (imageUploadResponse.ok) {
-          uploadedImageURL = imageResult.imageData.url;
+          uploadedImageURLs = imageResult.imageData.map(img => img.url);
         } else {
-          setMessage(`Error uploading image: ${imageResult.message}`);
+          setMessage(`Error uploading images: ${imageResult.message}`);
           setLoading(false);
           return;
         }
@@ -100,7 +115,7 @@ const ReportForm = () => {
         crimeDate: formData.crimeDate,
         crimeTime: formData.crimeTime,
         description: formData.description,
-        crimeimageURL: uploadedImageURL // ✅ Include the image URL here
+        crimeimageURLs: uploadedImageURLs // Include the image URLs array
       };
 
       // Step 3: Submit the report
@@ -124,11 +139,11 @@ const ReportForm = () => {
           crimeDate: '',
           crimeTime: '',
           description: '',
-          crimeimageURL: ''
+          crimeimageURLs: []
         });
-        setSelectedFile(null);
-        setReportUrl(`${window.location.origin}/report/${result.data._id}`)
-        console.log(result)
+        setSelectedFiles([]);
+        setPreviewUrls([]);
+        setReportUrl(`${window.location.origin}/status/${result.data._id}`);
       } else {
         setMessage(`Error: ${result.message || 'Failed to submit report'}`);
       }
@@ -140,25 +155,12 @@ const ReportForm = () => {
     }
   };
 
-
-  // Update the location handler to ensure numeric values
-  // const handleLocationUpdate = (position) => {
-  //   if (position && typeof position.lat === 'number' && typeof position.lng === 'number') {
-  //     setFormData({
-  //       ...formData,
-  //       location: {
-  //         lat: position.lat,
-  //         lng: position.lng
-  //       }
-  //     });
-  //   }
-  // };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-bold mb-6">Report an Incident</h2>
 
+        {/* Form fields remain the same */}
         <div className="mb-4">
           <div className="mb-4">
             <label className="block text-gray-700 mb-2">Name</label>
@@ -248,11 +250,14 @@ const ReportForm = () => {
           />
         </div>
 
+        {/* Updated file upload section for multiple images */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Upload Evidence (optional)</label>
+          <label className="block text-gray-700 mb-2">Upload Evidence Images (optional)</label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <p className="text-gray-500 mb-2">
-              {selectedFile ? selectedFile.name : "click to browse"}
+              {selectedFiles.length > 0
+                ? `${selectedFiles.length} file(s) selected`
+                : "Click to browse"}
             </p>
             <input
               type="file"
@@ -260,16 +265,45 @@ const ReportForm = () => {
               onChange={handleFileChange}
               className="hidden"
               accept="image/*"
+              multiple
             />
             <div
               className='bg-black text-white rounded transition-colors hover:bg-gray-800 px-4 h-[40px] cursor-pointer flex items-center justify-center w-[250px] m-auto'
-              type="button"
-              variant="outline"
-              size="sm"
               onClick={() => document.getElementById('fileInput').click()}
             >
-              <p>Choose</p>
+              <p>Choose Images</p>
             </div>
+
+            {/* Image previews */}
+            {previewUrls.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {previewUrls.map((url, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={url}
+                      alt={`Preview ${index}`}
+                      className="h-20 w-20 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                      onClick={() => {
+                        const newFiles = [...selectedFiles];
+                        newFiles.splice(index, 1);
+                        setSelectedFiles(newFiles);
+
+                        const newUrls = [...previewUrls];
+                        URL.revokeObjectURL(newUrls[index]);
+                        newUrls.splice(index, 1);
+                        setPreviewUrls(newUrls);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -287,6 +321,8 @@ const ReportForm = () => {
           {loading ? "Submitting..." : "Submit Report"}
         </Button>
       </div>
+
+      {reportUrl !== '' && <a href={reportUrl}>Url: {reportUrl}</a>}
     </form>
   );
 };

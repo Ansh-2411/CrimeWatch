@@ -256,7 +256,7 @@ const ReportStatusPage = () => {
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <Shield className="h-5 w-5 text-black" />
-                                <span className="font-semibold text-lg">SafetyWatch</span>
+                                <span className="font-semibold text-lg">CrimeWatch</span>
                             </div>
                         </div>
                     </div>
