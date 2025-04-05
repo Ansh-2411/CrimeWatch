@@ -13,8 +13,18 @@ const StationSchema = new Schema({
         unique: true
     },
     location: {
-        type: String,
-        required: true
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true
+        },
+        address: {
+            type: String
+        }
     },
     // jurisdictionArea: {
     //   type: String
@@ -25,9 +35,6 @@ const StationSchema = new Schema({
     // email: {
     //   type: String
     // },
-    address: {
-        type: String
-    },
     // establishedDate: {
     //   type: Date
     // },
@@ -46,6 +53,8 @@ const StationSchema = new Schema({
 }, {
     timestamps: true
 });
+
+StationSchema.index({ "location": "2dsphere" });
 
 
 module.exports = mongoose.model('Station', StationSchema);

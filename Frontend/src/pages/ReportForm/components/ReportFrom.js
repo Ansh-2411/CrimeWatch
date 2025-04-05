@@ -128,7 +128,7 @@ const ReportForm = () => {
       });
 
       const result = await response.json();
-
+      console.log(result)
       if (response.ok) {
         setMessage('Incident report submitted successfully!');
         setFormData({

@@ -15,6 +15,8 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const { checkForAuthenticatioCookie } = require('./middlewares/auth');
 const adminRouter = require("./routes/adminRoutes");
+const notificationRoute = require("./routes/notificationRoutes");
+const userRoutes = require('./routes/userRoutes')
 
 require("dotenv").config();
 
@@ -29,6 +31,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/report", reportRoutes);
 app.use('/admin', adminRouter)
+app.use("/notifications", notificationRoute);
+app.use("/user", userRoutes);
 // app.use("/audio", audioRoutes);
 
 mongoose.connect(process.env.MONGODB_URI)

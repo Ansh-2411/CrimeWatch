@@ -70,8 +70,8 @@ function HomePage() {
                                 <MessageSquare className="h-5 w-5" />
                             </Button>
                         </Link>
-                        <Link href="/report">
-                            <Button>Report Incident</Button>
+                        <Link href="/user-login">
+                            <Button>Login/SignUp</Button>
                         </Link>
                     </div>
                 </div>
@@ -157,7 +157,7 @@ function HomePage() {
                             <span className="font-semibold">SafetyWatch</span>
                         </div>
                         <div className="text-sm text-gray-600">
-                            © {new Date().getFullYear()} SafetyWatch. All rights reserved.
+                            © {new Date().getFullYear()} CrimeWatch. All rights reserved.
                         </div>
                         <div className="flex gap-4">
                             <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900">

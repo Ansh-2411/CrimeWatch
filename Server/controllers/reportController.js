@@ -1,6 +1,7 @@
 const Reports = require("../models/reports");
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const Station = require('../models/station');
+
 
 async function getreportbyID(req, res) {
   try {
@@ -104,10 +105,10 @@ const handlenewreport = async (req, res) => {
     const name = req.body.fullName || "";
     const email = req.body.email || "";
     console.log(location)
-    
+
     // Handle different location formats
     let coordinates = [location.latitude, location.longitude];
-    
+
     if (Array.isArray(location.coordinates) && location.coordinates.length === 2) {
       // Format: {location: {coordinates: [long, lat], address: "..."}}
       coordinates = location.coordinates;
@@ -120,7 +121,7 @@ const handlenewreport = async (req, res) => {
         message: 'Invalid location format. Please provide valid coordinates.'
       });
     }
-    
+
     // Create the incident object
     const newIncident = {
       fullName: name,
@@ -136,20 +137,34 @@ const handlenewreport = async (req, res) => {
       crimeTime,
       description
     };
-    
+
     // Add image URLs if provided
     if (crimeimageURLs && Array.isArray(crimeimageURLs) && crimeimageURLs.length > 0) {
       newIncident.crimeimageURLs = crimeimageURLs;
     }
-    
+
     // Save incident to database
     const incident = new Reports(newIncident);
     await incident.save();
-    
+
+    const nearestStation = await Station.findOne({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [coordinates[1], coordinates[0]]
+          },
+        }
+      }
+    });
+    // $maxDistance: 5000 // optional: in meters
+    console.log(nearestStation)
+
     res.status(201).json({
       success: true,
       message: 'Incident reported successfully',
-      data: incident
+      data: incident,
+      nearestStation: nearestStation
     });
   } catch (error) {
     console.error('Error reporting incident:', error);
