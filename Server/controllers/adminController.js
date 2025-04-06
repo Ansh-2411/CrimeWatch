@@ -50,7 +50,7 @@ module.exports = {
                 address,
                 joiningDate
             } = req.body;
-
+                console.log(req.body)
             const existingUser = await PoliceUser.findOne({ userName });
             if (existingUser) return res.status(400).json({ msg: 'Username already exists' });
 
@@ -83,12 +83,15 @@ module.exports = {
 
     handleLogin: async (req, res) => {
         try {
-            const { userName, password } = req.body;
-            const user = await PoliceUser.findOne({ userName });
+            const { username, password } = req.body;
+            console.log(req.body);
+            const user = await PoliceUser.findOne( {"userName":`${username}`} );
+            // const user = await PoliceUser.findOne( {"userName":`${userName}`} );
 
             if (!user) return res.status(400).json({ msg: 'Invalid username or password' });
 
             const isMatch = await bcrypt.compare(password, user.password);
+            console.log(password, user.password)
             if (!isMatch) return res.status(400).json({ msg: 'Invalid username or password' });
 
             const token = jwt.sign(

@@ -86,7 +86,7 @@ const reportSchema = new Schema({
   },
   lastUpdated: { type: Date, default: Date.now },
   timeline: [timelineSchema],
-  assignedTo: { type: String, default: "Not Assigned" }
+  assignedTo: { type: Schema.Types.ObjectId, default: "PoliceUser" }
 });
 
 // Create a geospatial index on the location field

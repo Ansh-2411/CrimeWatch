@@ -72,11 +72,6 @@ const handlenewreport = async (req, res) => {
     if (crimeimageURLs && Array.isArray(crimeimageURLs) && crimeimageURLs.length > 0) {
       newIncident.crimeimageURLs = crimeimageURLs;
     }
-
-    // Save incident to database
-    const incident = new Reports(newIncident);
-    await incident.save();
-
     const nearestStation = await Station.findOne({
       location: {
         $near: {
@@ -87,6 +82,24 @@ const handlenewreport = async (req, res) => {
         }
       }
     });
+
+    console.log(nearestStation)
+
+    newIncident.assignedTo = nearestStation.stationPI;
+    // Save incident to database
+    const incident = new Reports(newIncident);
+    await incident.save();
+
+    // const nearestStation = await Station.findOne({
+    //   location: {
+    //     $near: {
+    //       $geometry: {
+    //         type: "Point",
+    //         coordinates: [coordinates[1], coordinates[0]]
+    //       },
+    //     }
+    //   }
+    // });
     // $maxDistance: 5000 // optional: in meters
     // console.log(nearestStation)
 

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, Bell, MessageSquare, Shield } from 'lucide-react';
 import '../../App.css'; // Import the CSS file
+import CrimeHeatmap from "../../components/heatmap/crime-heatmap"
 
 // Mock components that would need to be created separately
 const Button = ({ variant = "default", size, className = "", children }) => {
@@ -44,8 +45,8 @@ const LanguageSwitcher = () => (
 );
 
 const CrimeMap = () => (
-    <div className="crime-map bg-gray-100 h-full flex items-center justify-center">
-        <div>Interactive Crime Map would be displayed here</div>
+    <div className="crime-map h-full w-full">
+        <CrimeHeatmap />
     </div>
 );
 
@@ -103,6 +104,11 @@ function HomePage() {
                         {!auth && <Link href="/user-login">
                             <Button>Login/SignUp</Button>
                         </Link>}
+                        <a href="http://localhost:5173/login" target="_blank" rel="noopener noreferrer">
+                            <Button variant="ghost" size="icon">
+                                Police Login
+                            </Button>
+                        </a>
                         {auth &&
                             <Link href="/status">
                                 <Button>Status </Button>
@@ -127,12 +133,7 @@ function HomePage() {
                                         Report an Incident
                                     </Button>
                                 </Link>
-                                <Link href="/map">
-                                    <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                                        {/* <MapPin className="mr-2 h-4 w-4" /> */}
-                                        View Crime Map
-                                    </Button>
-                                </Link>
+
                             </div>
                         </div>
                     </div>
