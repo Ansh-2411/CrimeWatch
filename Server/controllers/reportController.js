@@ -24,79 +24,7 @@ async function getreportbyID(req, res) {
   }
 }
 
-// In your reportController.js
-// const handlenewreport = async (req, res) => {
-//   try {
-//     const { crimetype, crimeDate, crimeTime, description, crimeimageURL } = req.body;
-//     const location = req.body.location || {};
-//     const name = req.body.fullName || "";
-//     const email = req.body.email || "";
-//     console.log(location)
 
-//     // Handle different location formats
-//     let coordinates = [location.latitude, location.longitude];
-
-//     if (Array.isArray(location.coordinates) && location.coordinates.length === 2) {
-//       // Format: {location: {coordinates: [long, lat], address: "..."}}
-//       coordinates = location.coordinates;
-//     } else if (location.latitude !== undefined && location.longitude !== undefined) {
-//       // Format: {location: {latitude: lat, longitude: long}}
-//       coordinates = [location.longitude, location.latitude];
-//     } else {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Invalid location format. Please provide valid coordinates.'
-//       });
-//     }
-
-//     // Validate coordinates
-//     // if (!coordinates[0] || !coordinates[1] || isNaN(coordinates[0]) || isNaN(coordinates[1])) {
-//     //   return res.status(400).json({
-//     //     success: false,
-//     //     message: 'Invalid location coordinates. Both longitude and latitude are required and must be numeric.'
-//     //   });
-//     // }
-
-//     // Create the incident object
-//     const newIncident = {
-//       fullName: name,
-//       email: email,
-//       reportId: uuidv4(), // Ensure unique reportId
-//       crimetype,
-//       location: {
-//         type: 'Point',
-//         coordinates,
-//         address: location.address || ''
-//       },
-//       crimeDate: new Date(crimeDate),
-//       crimeTime,
-//       description
-//     };
-
-//     // Add image URL if provided
-//     if (crimeimageURL) {
-//       newIncident.crimeimageURL = crimeimageURL;
-//     }
-
-//     // Save incident to database
-//     const incident = new Reports(newIncident);
-//     await incident.save();
-
-//     res.status(201).json({
-//       success: true,
-//       message: 'Incident reported successfully',
-//       data: incident
-//     });
-
-//   } catch (error) {
-//     console.error('Error reporting incident:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error reporting incident',
-//       error: error.message
-//     });
-//   }
-// }
 
 const handlenewreport = async (req, res) => {
   try {
@@ -104,7 +32,6 @@ const handlenewreport = async (req, res) => {
     const location = req.body.location || {};
     const name = req.body.fullName || "";
     const email = req.body.email || "";
-    console.log(location)
 
     // Handle different location formats
     let coordinates = [location.latitude, location.longitude];
@@ -122,8 +49,10 @@ const handlenewreport = async (req, res) => {
       });
     }
 
+
     // Create the incident object
     const newIncident = {
+      createdBy: req.body.createdBy || null,
       fullName: name,
       email: email,
       reportId: uuidv4(), // Ensure unique reportId
@@ -137,6 +66,7 @@ const handlenewreport = async (req, res) => {
       crimeTime,
       description
     };
+    console.log(newIncident)
 
     // Add image URLs if provided
     if (crimeimageURLs && Array.isArray(crimeimageURLs) && crimeimageURLs.length > 0) {
@@ -158,7 +88,7 @@ const handlenewreport = async (req, res) => {
       }
     });
     // $maxDistance: 5000 // optional: in meters
-    console.log(nearestStation)
+    // console.log(nearestStation)
 
     res.status(201).json({
       success: true,

@@ -1,40 +1,80 @@
 const User = require('../models/user');
+const Reports = require("../models/reports");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+JWT_SECRET = 'secret_key'
+
+
+const getUserReports = async (req,res) => {
+    try {
+        const userId = req.params.id; 
+        const reports = await Reports.find({ createdBy: userId });
+        return res.status(200).json({ data: reports });
+    } catch (error) {
+        console.error("Error fetching reports:", error);
+        return res.status(500).json({ data: error.message });
+    }
+};
 
 async function handelsignup(req, res) {
-
     try {
+
         const { fullName, email, password } = req.body;
-        const newUser = await User.create({ 
-            fullName,
-             email,
-             password ,
-            });
+        console.log(req.body)
 
-        res.redirect("/");  
-    } catch (error) {
-        console.error("Error during signup:", error);
-
-        if (error.code === 11000) {
-            return res.status(400).send("Email already exists!");
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists with this email' });
         }
 
-        res.status(500).send("Internal Server Error");
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log(hashedPassword)
+        const newUser = new User({
+            fullName,
+            email,
+            password: hashedPassword,
+        });
+        console.log(newUser)
+
+        await newUser.save();
+
+        const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(201).json({ message: 'User registered successfully', token });
+    } catch (error) {
+        console.error('Register Error:', error);
+        res.status(500).json({ message: 'Server Error' });
     }
 };
-async function handelsignin(req, res) {
+const handelsignin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const token = await User.matchPasswordAndGenerateToken(email, password);
-        return res.cookie("token",token).redirect("/");
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
-       return res.render("signin",{error :"Incorrect email or password"});
+        console.error('Login Error:', error);
+        res.status(500).json({ message: 'Server Error' });
     }
 };
-function handellogout(req,res){
+
+function handellogout(req, res) {
     res.clearCookie("token").redirect("/");
 };
 
-module.exports={
+module.exports = {
+    getUserReports,
     handelsignup,
     handelsignin,
     handellogout,

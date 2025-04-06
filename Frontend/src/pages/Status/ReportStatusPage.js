@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { useParams } from "react-router-dom";
-
+import { jwtDecode } from 'jwt-decode';
 import {
     Shield,
     MapPin,
@@ -31,20 +31,43 @@ const ReportStatusPage = () => {
     const [detailsOpen, setDetailsOpen] = useState(false)
     const [activeTab, setActiveTab] = useState("list")
     const [detailTab, setDetailTab] = useState("details")
+    const getUserId = () => {
 
+        const token = localStorage.getItem('authToken');
+
+        if (!token) return null;
+
+        try {
+            const decoded = jwtDecode(token);
+            console.log(decoded.userId)
+            return decoded.userId
+
+        } catch (error) {
+            console.error('Invalid token', error);
+            return null;
+        }
+    };
     useEffect(() => {
         // Fetch reports from API
         const fetchReports = async () => {
             try {
+                let response
+                if (reportId) {
 
-                const response = await fetch(`http://localhost:4000/report/${reportId}`);
+                    response = await fetch(`http://localhost:4000/report/${reportId}`);
+                }
+                else {
+                    let id = getUserId()
+                    response = await fetch(`http://localhost:4000/user/getReports/${id}`)
+                }
 
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || "Failed to fetch report");
                 }
-                console.log(response)
+                console.log(response.data)
                 const data = await response.json();
+                console.log(data.data, "datatattat")
 
                 // Mock data for demonstration
                 // const mockReports = [
@@ -130,7 +153,8 @@ const ReportStatusPage = () => {
                 //         assignedTo: "Officer Williams",
                 //     },
                 // ]
-                const mockReports = [data.data]
+
+                const mockReports = reportId ? [data.data] : data.data
 
                 setReports(mockReports)
                 setLoading(false)

@@ -25,6 +25,10 @@ const reportSchema = new Schema({
   fullName: {
     type: String,
   },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'user'
+  },
   email: {
     type: String,
   },

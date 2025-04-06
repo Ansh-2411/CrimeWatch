@@ -19,6 +19,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/report" element={<ReportForm />} />
           <Route path="/status/:id" element={<ReportStatusPage />} />
+          <Route path="/status" element={<ReportStatusPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path="/user-login" element={<Login/>} />
           <Route path="/user-signup" element={<Signup/>} />

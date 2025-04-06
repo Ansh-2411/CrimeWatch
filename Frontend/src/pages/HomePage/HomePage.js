@@ -1,5 +1,5 @@
 // App.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapPin, Bell, MessageSquare, Shield } from 'lucide-react';
 import '../../App.css'; // Import the CSS file
 
@@ -50,6 +50,36 @@ const CrimeMap = () => (
 );
 
 function HomePage() {
+    const [auth, setAuth] = useState(false)
+    const checkAuthCookie = () => {
+        // Log all cookies to see what's available
+        console.log('All cookies:', document.cookie);
+
+        const cookies = document.cookie.split(';');
+        const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='));
+
+        // Log individual cookies for debugging
+        cookies.forEach(cookie => console.log('Cookie found:', cookie.trim()));
+
+        const localToken = localStorage.getItem('authToken');
+
+        if (tokenCookie) {
+            console.log('Auth cookie is available');
+            return true;
+        } else if (localToken) {
+            console.log('Auth token found in localStorage');
+            return true;
+        } else {
+            console.log('No authentication found');
+            return false;
+        }
+    };
+    useEffect(() => {
+        if (checkAuthCookie())
+            setAuth(true)
+    }, [])
+
+
     return (
         <div className="flex flex-col min-h-screen">
             <header className="border-b border-gray-200">
@@ -70,9 +100,14 @@ function HomePage() {
                                 <MessageSquare className="h-5 w-5" />
                             </Button>
                         </Link>
-                        <Link href="/user-login">
+                        {!auth && <Link href="/user-login">
                             <Button>Login/SignUp</Button>
-                        </Link>
+                        </Link>}
+                        {auth &&
+                            <Link href="/status">
+                                <Button>Status </Button>
+                            </Link>
+                        }
                     </div>
                 </div>
             </header>

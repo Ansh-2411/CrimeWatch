@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CurrentLocationMap from '../../../components/Map/Map';
+import { jwtDecode } from 'jwt-decode';
 
 const Button = ({ size, className, children, fun = () => { } }) => {
   const sizeClasses = {
@@ -36,6 +37,31 @@ const ReportForm = () => {
   const [message, setMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
+
+
+  const [auth, setAuth] = useState(false)
+  const [id, setId] = useState('')
+  const checkAuthCookie = () => {
+
+    const token = localStorage.getItem('authToken');
+
+    if (!token) return null;
+
+    try {
+      const decoded = jwtDecode(token);
+      console.log(decoded.userId)
+      setId(decoded.userId)
+      return true
+
+    } catch (error) {
+      console.error('Invalid token', error);
+      return null;
+    }
+  };
+  useEffect(() => {
+    if (checkAuthCookie())
+      setAuth(true)
+  }, [])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -104,6 +130,7 @@ const ReportForm = () => {
 
       // Step 2: Format the data for the API
       const incidentData = {
+        createdBy: id || null,
         fullName: formData.fullName || "",
         email: formData.email || "",
         crimetype: formData.crimetype,

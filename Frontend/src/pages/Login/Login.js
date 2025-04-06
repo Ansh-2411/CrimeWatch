@@ -1,8 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import { useState } from "react"
 import "../../static/Auth.css"
+import { useNavigate } from 'react-router-dom';
+
+
 
 const Login = ({ onSwitchToSignup, onLogin }) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -44,13 +48,52 @@ const Login = ({ onSwitchToSignup, onLogin }) => {
         return Object.keys(newErrors).length === 0
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-
+        console.log(formData)
         if (validateForm()) {
             setIsLoading(true)
 
-            // Simulate API call
+            const response = await fetch('http://localhost:4000/user/signin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+            console.log(response)
+            console.log(data)
+            if (response.ok && data.token) {
+                // Optional: Store token in localStorage if needed
+                if (formData.rememberMe) {
+                    localStorage.setItem('authToken', data.token);
+                }
+
+                setTimeout(() => {
+                    setIsLoading(false)
+
+                    if (onLogin) {
+                        onLogin(formData)
+                    }
+
+                    // NAVIGATION OPTION 1: If using React Router
+                    // Import and use navigate from your component
+                    navigate('/'); // Navigate to home page
+
+                    // NAVIGATION OPTION 2: Plain JavaScript redirect
+                    // window.location.href = '/'; // Navigate to base URL
+
+                    // NAVIGATION OPTION 3: If you have a custom navigation function
+                    // navigateTo('/');
+                }, 1500)
+            } else {
+                setIsLoading(false);
+                // Handle login failure
+                console.error("Login failed:", data.error);
+                // Show error message to user
+            }
             setTimeout(() => {
                 setIsLoading(false)
                 if (onLogin) {

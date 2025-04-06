@@ -1,20 +1,20 @@
 import { NavLink } from 'react-router-dom';
 import { useState } from "react"
 import "../../static/Auth.css"
+import { useNavigate } from 'react-router-dom';
 
 const Signup = ({ onSwitchToLogin, onSignup }) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
+        fullName: "",
         email: "",
-        badgeNumber: "",
         password: "",
         confirmPassword: "",
         agreeToTerms: false,
-        location: {
-            coordinates: [],
-            address: ""
-        }
+        // location: {
+        //     coordinates: [],
+        //     address: ""
+        // }
     })
     const [errors, setErrors] = useState({})
     const [isLoading, setIsLoading] = useState(false)
@@ -56,10 +56,22 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
         return Object.keys(newErrors).length === 0
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
 
         if (validateForm()) {
+
+            const response = await fetch("http://localhost:4000/user/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+            if (response.ok) {
+                navigate('/user-login')
+            }
+            console.log(response)
             setIsLoading(true)
             setTimeout(() => {
                 setIsLoading(false)
@@ -89,12 +101,12 @@ const Signup = ({ onSwitchToLogin, onSignup }) => {
                             type="text"
                             id="fullName"
                             name="fullName"
-                            value={formData.firstName}
+                            value={formData.fullName}
                             onChange={handleChange}
-                            className={errors.firstName ? "error" : ""}
+                            className={errors.fullName ? "error" : ""}
                             placeholder="John doe"
                         />
-                        {errors.firstName && <div className="error-message">{errors.firstName}</div>}
+                        {errors.fullName && <div className="error-message">{errors.fullName}</div>}
                     </div>
 
                     <div className="form-group">

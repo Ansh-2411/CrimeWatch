@@ -1,15 +1,17 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const fileUpload = require("express-fileupload");
+// const fileUpload = require("express-fileupload");
 const reportRoutes = require("./routes/reportRoutes");
-const audioRoutes = require("./multer/voiceMulter")
+// const audioRoutes = require("./multer/voiceMulter")
 require("dotenv").config();
+
+const cookieParser = require('cookie-parser');
 
 
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+// const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 
 
@@ -24,9 +26,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// app.use(checkForAuthenticatioCookie("token"));
+app.use(cookieParser());
 
 
 app.use("/report", reportRoutes);
